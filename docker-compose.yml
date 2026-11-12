@@ -1,0 +1,31 @@
+services:
+  api-go:
+    build: ./api-go
+    container_name: api-go
+    ports:
+      - "8090:8080"
+    env_file:
+      - .env
+    depends_on:
+      api-node:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api-node:
+    build: ./api-node
+    container_name: api-node
+    ports:
+      - "3001:3000"
+    env_file:
+      - .env
+    environment:
+      - PORT=3000
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
