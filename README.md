@@ -1,6 +1,6 @@
-# Technical challenge - Talsory Recruiting
+# Technical Challenge - Talsory Recruiting
 
-Solución al desafío técnico de dos APIs RESTful comunicadas por HTTP, con factorización QR en Go y cálculo de estadísticas en Node.js. Incluye Docker, JWT y pruebas unitarias.
+Solución al desafío técnico de dos APIs RESTful comunicadas por HTTP, con factorización QR en Go y cálculo de estadísticas en Node.js. Incluye Docker, JWT, pruebas unitarias y un frontend desarrollado con Angular 22 y Tailwind CSS.
 
 ## 📋 Tabla de Contenidos
 
@@ -21,47 +21,59 @@ Solución al desafío técnico de dos APIs RESTful comunicadas por HTTP, con fac
 
 ## Descripción del Proyecto
 
-El sistema consta de dos microservicios:
+El sistema consta de dos microservicios backend y un frontend:
 
 - **API Go (Fiber):** Recibe una matriz rectangular, calcula su factorización QR (Q y R) mediante el algoritmo de Householder y envía las matrices resultantes a la API de Node.js.
 - **API Node.js (Express):** Recibe las matrices Q y R, calcula estadísticas (máximo, mínimo, promedio, suma total y si es diagonal) y devuelve la respuesta a la API de Go, que consolida todo y responde al cliente final.
+- **Frontend (Angular 22 + Tailwind CSS):** Proporciona la interfaz gráfica para interactuar con el sistema, consumir los servicios backend y visualizar los resultados de la factorización QR y sus estadísticas.
 
-Ambas APIs están protegidas por **JWT**, excepto el endpoint de login y los health checks.
+Las APIs están protegidas por **JWT**, excepto el endpoint de login y los health checks.
 
 ## Arquitectura
 
-
-                   [ Cliente ]
-                       |
-                       | POST /api/v1/qr (con JWT)
-                       v
-                 [ API Go :8080 ]
-                       |
-                       | 1. Valida matriz
-                       | 2. Calcula factorización QR (Householder)
-                       | 3. Llama a Node.js con Q y R (con JWT)
-                       v
-                [ API Node :3000 ]
-                       |
-                       | 4. Calcula estadísticas
-                       v
-                   [ API Go ]
-                       |
-                       | 5. Consolida respuesta
-                       v
-                   [ Cliente ]
-
+```text
+                       [ Usuario ]
+                            |
+                            v
+                  [ Frontend Angular ]
+                       Cloudflare
+                            |
+                            | HTTP / HTTPS + JWT
+                            v
+                     [ API Go :8080 ]
+                            |
+                            | 1. Valida matriz
+                            | 2. Calcula factorización QR
+                            |    (Householder)
+                            | 3. Envía Q y R con JWT
+                            v
+                    [ API Node :3000 ]
+                            |
+                            | 4. Calcula estadísticas
+                            |    (máximo, mínimo, promedio,
+                            |     suma e indicador diagonal)
+                            v
+                        [ API Go ]
+                            |
+                            | 5. Consolida resultados
+                            v
+                  [ Frontend Angular ]
+                            |
+                            v
+                       [ Usuario ]
+```
 
 ## Tecnologías Utilizadas
 
-| Componente     | Tecnología |
-|----------------|------------|
-| API 1          | Go 1.22 + Fiber v2 
-| API 2          | Node.js 20 + Express v4 
-| Autenticación  | JWT (HS256) 
-| Contenedores   | Docker + Docker Compose 
-| Pruebas (Go)   | testing nativo 
-| Pruebas (Node) | Jest + Supertest 
+| Componente | Tecnología |
+|---|---|
+| API 1 | Go 1.22 + Fiber v2 |
+| API 2 | Node.js 20 + Express v4 |
+| Autenticación | JWT (HS256) |
+| Contenedores | Docker + Docker Compose |
+| Pruebas (Go) | testing nativo |
+| Pruebas (Node) | Jest + Supertest |
+| Frontend | Angular 22 + Tailwind CSS |
 
 ## Justificación de Decisiones Técnicas
 
@@ -112,7 +124,7 @@ Householder maneja matrices de rango deficiente (R tendrá ceros o valores cerca
 
 ## Estructura de Carpetas
 
-
+```text
 coding-challenge/
 ├── api-go/
 │   ├── cmd/
@@ -123,24 +135,27 @@ coding-challenge/
 │   │   ├── math/          # Algoritmo QR (Householder)
 │   │   ├── client/        # Cliente HTTP hacia Node.js
 │   │   └── model/         # Tipos y validaciones
-│   ├── tests/              # Pruebas unitarias (QR)
+│   ├── tests/             # Pruebas unitarias (QR)
 │   ├── Dockerfile
 │   └── go.mod
 ├── api-node/
 │   ├── src/
-│   │   ├── routes/         # Definición de endpoints
-│   │   ├── controllers/    # Controladores
-│   │   ├── services/       # Lógica de estadísticas
-│   │   ├── middlewares/    # Middleware JWT
-│   │   └── app.js          # Configuración de Express
-│   ├── tests/              # Pruebas unitarias (Jest)
+│   │   ├── routes/        # Definición de endpoints
+│   │   ├── controllers/   # Controladores
+│   │   ├── services/      # Lógica de estadísticas
+│   │   ├── middlewares/   # Middleware JWT
+│   │   └── app.js         # Configuración de Express
+│   ├── tests/             # Pruebas unitarias (Jest)
 │   ├── Dockerfile
+│   └── package.json
+├── frontend-angular/
+│   ├── src/
 │   └── package.json
 ├── docker-compose.yml
 ├── .env.example
-├── .env                    # No subir al repositorio
+├── .env                   # No subir al repositorio
 └── README.md
-
+```
 
 ## Requisitos de Instalación
 
@@ -148,6 +163,7 @@ Para ejecutar el proyecto se requiere:
 
 - Go 1.22 o superior.
 - Node.js 20 o superior.
+- Angular CLI compatible con Angular 22.
 - Docker y Docker Compose (recomendado).
 - Postman o curl para realizar las pruebas.
 
@@ -155,7 +171,7 @@ Para ejecutar el proyecto se requiere:
 
 ### 1. API Node.js
 
-
+```bash
 cd api-node
 
 npm install
@@ -163,7 +179,7 @@ npm install
 cp .env.example .env
 
 npm start
-
+```
 
 La API Node.js estará disponible en:
 
@@ -173,19 +189,41 @@ La API Node.js estará disponible en:
 
 En una nueva terminal:
 
-
+```bash
 cd api-go
 
 go mod tidy
 
 go run cmd/main.go
-
+```
 
 La API Go estará disponible en:
 
 `http://localhost:8080`
 
-**Nota:** Asegurarse de que las variables de entorno (`JWT_SECRET`, `NODE_API_URL`, etc.) estén configuradas correctamente.
+### 3. Frontend Angular
+
+En una nueva terminal:
+
+```bash
+cd frontend-angular
+
+npm install
+
+npm start
+```
+
+Si el proyecto no tiene configurado el script `start`, se puede ejecutar mediante Angular CLI:
+
+```bash
+ng serve
+```
+
+El frontend estará disponible en la dirección local indicada por Angular CLI, normalmente:
+
+`http://localhost:4200`
+
+**Nota:** Asegurarse de que las variables de entorno (`JWT_SECRET`, `NODE_API_URL`, etc.) estén configuradas correctamente y que el frontend apunte a la URL correspondiente de la API Go.
 
 ## Ejecución con Docker
 
@@ -193,11 +231,11 @@ Copiar `.env.example` a `.env` y ajustar los valores según sea necesario.
 
 Ejecutar:
 
-
+```bash
 docker-compose up --build
+```
 
-
-Esto levantará ambos servicios:
+Esto levantará ambos servicios backend:
 
 | Servicio | URL |
 |---|---|
@@ -206,15 +244,17 @@ Esto levantará ambos servicios:
 
 Para ejecutar los servicios en segundo plano:
 
-
+```bash
 docker-compose up --build -d
-
+```
 
 Para detener los servicios:
 
-
+```bash
 docker-compose down
+```
 
+**Nota:** El frontend se despliega de forma independiente mediante Cloudflare Pages.
 
 ## Endpoints y Ejemplos
 
@@ -226,20 +266,20 @@ docker-compose down
 
 **Request:**
 
-
+```json
 {
   "username": "admin",
   "password": "password123"
 }
-
+```
 
 **Response (200 OK):**
 
-
+```json
 {
   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 }
-
+```
 
 El token obtenido debe utilizarse para acceder a los endpoints protegidos.
 
@@ -251,14 +291,14 @@ El token obtenido debe utilizarse para acceder a los endpoints protegidos.
 
 **Headers:**
 
-
+```text
 Authorization: Bearer <token>
 Content-Type: application/json
-
+```
 
 **Request:**
 
-
+```json
 {
   "matrix": [
     [1, 2],
@@ -266,11 +306,11 @@ Content-Type: application/json
     [5, 6]
   ]
 }
-
+```
 
 **Response (200 OK):**
 
-
+```json
 {
   "q": [
     [-0.169..., 0.897...],
@@ -305,7 +345,7 @@ Content-Type: application/json
     }
   }
 }
-
+```
 
 **Nota:** Los valores numéricos de la respuesta son ilustrativos. La respuesta real dependerá de la implementación y del algoritmo utilizado.
 
@@ -319,12 +359,12 @@ Permiten verificar que los servicios están funcionando correctamente.
 
 Respuesta:
 
-
+```json
 {
   "status": "ok",
   "service": "api-go"
 }
-
+```
 
 **API Node.js:**
 
@@ -332,12 +372,14 @@ Respuesta:
 
 Respuesta:
 
-
+```json
 {
   "status": "ok",
   "service": "api-node"
 }
+```
 
+> **Nota:** Para probar los endpoints en producción, reemplaza `http://localhost:8090` por `https://talsory-api-go.onrender.com`.
 
 ## Pruebas
 
@@ -345,11 +387,11 @@ Respuesta:
 
 Ejecutar las pruebas unitarias:
 
-
+```bash
 cd api-go
 
 go test ./tests/ -v
-
+```
 
 Pruebas incluidas:
 
@@ -363,11 +405,11 @@ Pruebas incluidas:
 
 Ejecutar las pruebas unitarias:
 
-
+```bash
 cd api-node
 
 npm test
-
+```
 
 Pruebas incluidas:
 
@@ -379,23 +421,26 @@ Pruebas incluidas:
 
 ## Despliegue en la Nube
 
-### Opción recomendada: Render / Railway
+La aplicación está completamente desplegada y funcional en servicios cloud gratuitos:
 
-1. Subir el repositorio a GitHub.
-2. Crear un nuevo Web Service en Render o Railway para cada API.
-3. Configurar las variables de entorno (`JWT_SECRET`, `NODE_API_URL`, etc.).
-4. Render o Railway detectará el Dockerfile y realizará el despliegue.
-5. Verificar que ambos servicios estén funcionando correctamente mediante sus health checks.
+### 🔗 Enlaces en Vivo
 
-**Nota:** Asegurarse de que `NODE_API_URL` en Go apunte a la URL pública de Node.js en producción.
+- **Frontend (Angular + Tailwind):** [https://talsory-frontend.pages.dev](https://talsory-frontend.pages.dev)
+- **API Go (Render):** [https://talsory-api-go.onrender.com/health](https://talsory-api-go.onrender.com/health)
+- **API Node.js (Render):** [https://talsory-api-node.onrender.com/health](https://talsory-api-node.onrender.com/health)
+
+### Infraestructura
+
+- **Backend:** Desplegado en **Render** utilizando los Dockerfiles de cada servicio. Las variables de entorno (`JWT_SECRET`, `NODE_API_URL`, etc.) están configuradas directamente en el panel de Render.
+- **Frontend:** Desplegado en **Cloudflare Pages**, configurado para compilar Angular 22 automáticamente desde el repositorio de GitHub.
 
 ## Limitaciones Conocidas
 
 - **JWT simple:** No se implementaron refresh tokens ni revocación. Es suficiente para el alcance del reto.
 - **Sin base de datos:** Las credenciales están configuradas mediante variables de entorno. En producción se utilizaría una base de datos.
-- **Sin frontend:** Se priorizó el backend según los requerimientos obligatorios. Se dejó la estructura base de Angular para futuras iteraciones.
+- **Cold Starts:** Al usar el plan gratuito de Render, los servicios backend se "duermen" tras un periodo de inactividad. La primera petición puede tardar hasta 50 segundos en responder mientras los contenedores se reinician.
 - **Matrices grandes:** El algoritmo Householder tiene una complejidad de O(m × n²). Para matrices muy grandes se recomendaría utilizar una librería optimizada como LAPACK.
 
 ## Autor
 
-Hernán Ríos - Technical challenge para Talsory Recruiting
+Hernán Ríos - Technical Challenge para Talsory Recruiting
