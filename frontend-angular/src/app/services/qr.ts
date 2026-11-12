@@ -14,7 +14,8 @@ export interface QRResponse {
 
 @Injectable({ providedIn: 'root' })
 export class QrService {
-  private apiUrl = 'https://talsory-api-go.onrender.com/api/v1';
+  // private apiUrl = 'https://talsory-api-go.onrender.com/api/v1';
+  private apiUrl = '/api/v1'; // Cambiado a localhost para pruebas locales
 
   constructor(private http: HttpClient) {}
 
